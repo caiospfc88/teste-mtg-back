@@ -1,18 +1,54 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDTO } from './dto/create-user.dto';
-import { PrismaService } from 'src/prisma.service';
 
 @Injectable()
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(createUserDto: CreateUserDTO) {
-    return await this.prisma.user.create({
-      data: createUserDto,
+  create(createUserDto: CreateUserDTO) {
+    return this.prisma.user.create({
+      data: {
+        name: createUserDto.name,
+        email: createUserDto.email,
+        password: createUserDto.password,
+        isActive: createUserDto.isActive ?? true,
+        groups: createUserDto.groups
+          ? {
+              create: createUserDto.groups.map((groupId) => ({
+                group: { connect: { id: groupId } },
+              })),
+            }
+          : undefined,
+      },
+      include: {
+        groups: { include: { group: true } },
+      },
     });
   }
 
-  async findAll() {
-    return await this.prisma.user.findMany();
+  findAll() {
+    return this.prisma.user.findMany({
+      include: {
+        groups: { include: { group: true } },
+        ownedGroups: true,
+      },
+    });
+  }
+
+  async findOne(id: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      include: {
+        groups: { include: { group: true } },
+        ownedGroups: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`Usuário com ID ${id} não encontrado`);
+    }
+
+    return user;
   }
 }
