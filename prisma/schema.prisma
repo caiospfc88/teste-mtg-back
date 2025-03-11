@@ -28,12 +28,11 @@ model Group {
   id    String   @id @default(cuid())
   name  String   @unique
   users UserGroup[]
-  ownerId String
+  ownerId String?
 
-  owner User @relation("GroupOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  owner User? @relation("GroupOwner", fields: [ownerId], references: [id], onDelete: SetNull)
 }
 
-// Tabela intermediária para relação muitos-para-muitos
 model UserGroup {
   userId  String
   groupId String
@@ -41,5 +40,5 @@ model UserGroup {
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
   group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
-  @@id([userId, groupId]) // Chave composta para evitar duplicação
+  @@id([userId, groupId])
 }

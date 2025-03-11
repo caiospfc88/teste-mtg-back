@@ -65,7 +65,6 @@ export class GroupsController {
     return this.groupsService.remove(id);
   }
 
-  // DELETE /groups?id=...
   @Delete()
   removeByQuery(@Query('id') id: string) {
     if (!id) {

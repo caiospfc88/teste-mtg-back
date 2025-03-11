@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
 
 export class CreateGroupDTO {
   @IsString()
@@ -6,6 +6,6 @@ export class CreateGroupDTO {
   name: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   ownerId: string;
 }

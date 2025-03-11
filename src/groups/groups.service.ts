@@ -12,9 +12,17 @@ export class GroupsService {
     return this.prisma.group.create({
       data: {
         name: createGroupDto.name,
-        owner: { connect: { id: createGroupDto.ownerId } },
+        ...(createGroupDto.ownerId && {
+          owner: {
+            connect: {
+              id: createGroupDto.ownerId,
+            },
+          },
+        }),
       },
-      include: { owner: true },
+      include: {
+        owner: true,
+      },
     });
   }
 
@@ -89,7 +97,6 @@ export class GroupsService {
   }
 
   async remove(id: string) {
-    // Verifica se o grupo existe antes de deletar
     const group = await this.prisma.group.findUnique({ where: { id } });
     if (!group) {
       throw new NotFoundException(`Grupo com ID ${id} não encontrado`);
