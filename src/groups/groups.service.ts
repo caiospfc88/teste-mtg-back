@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateGroupDTO } from './dto/create-group.dto';
+import { UpdateGroupDTO } from './dto/update-group.dto';
 import { AddUserToGroupDTO } from '../user-group/dto/add-user-to-group.dto';
 
 @Injectable()
@@ -72,6 +73,17 @@ export class GroupsService {
       where: {
         userId_groupId: { userId, groupId },
       },
+    });
+  }
+  async update(id: string, updateGroupDto: UpdateGroupDTO) {
+    const group = await this.prisma.group.findUnique({ where: { id } });
+    if (!group) {
+      throw new NotFoundException(`Grupo com ID ${id} não encontrado`);
+    }
+
+    return this.prisma.group.update({
+      where: { id },
+      data: updateGroupDto,
     });
   }
 }
