@@ -75,6 +75,7 @@ export class GroupsService {
       },
     });
   }
+
   async update(id: string, updateGroupDto: UpdateGroupDTO) {
     const group = await this.prisma.group.findUnique({ where: { id } });
     if (!group) {
@@ -84,6 +85,18 @@ export class GroupsService {
     return this.prisma.group.update({
       where: { id },
       data: updateGroupDto,
+    });
+  }
+
+  async remove(id: string) {
+    // Verifica se o grupo existe antes de deletar
+    const group = await this.prisma.group.findUnique({ where: { id } });
+    if (!group) {
+      throw new NotFoundException(`Grupo com ID ${id} não encontrado`);
+    }
+
+    return this.prisma.group.delete({
+      where: { id },
     });
   }
 }

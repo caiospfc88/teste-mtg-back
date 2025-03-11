@@ -3,9 +3,11 @@ import {
   Get,
   Post,
   Put,
+  Delete,
   Body,
   Param,
   NotFoundException,
+  Query,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDTO } from './dto/create-user.dto';
@@ -49,7 +51,6 @@ export class UsersController {
     return user;
   }
 
-  // Rota para atualizar um usuário
   @Put(':id')
   async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDTO) {
     const user = await this.usersService.findOne(id);
@@ -57,7 +58,19 @@ export class UsersController {
       throw new NotFoundException(`Usuário com ID ${id} não encontrado`);
     }
 
-    // Atualizando o usuário
     return this.usersService.update(id, updateUserDto);
+  }
+
+  @Delete(':id') // DELETE /users/:id
+  removeById(@Param('id') id: string) {
+    return this.usersService.remove(id);
+  }
+
+  @Delete() // DELETE /users?id=...
+  removeByQuery(@Query('id') id: string) {
+    if (!id) {
+      throw new NotFoundException('O parâmetro "id" é obrigatório na query');
+    }
+    return this.usersService.remove(id);
   }
 }

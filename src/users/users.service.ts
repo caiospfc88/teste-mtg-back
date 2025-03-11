@@ -54,13 +54,40 @@ export class UsersService {
   }
   async update(id: string, updateUserDto: UpdateUserDTO) {
     const user = await this.prisma.user.findUnique({ where: { id } });
+
     if (!user) {
       throw new NotFoundException(`Usuário com ID ${id} não encontrado`);
     }
 
+    const { groups, ...userData } = updateUserDto;
+
     return this.prisma.user.update({
       where: { id },
-      data: updateUserDto,
+      data: {
+        ...userData,
+        groups: groups
+          ? {
+              set: groups.map((groupId) => ({
+                userId_groupId: {
+                  userId: id,
+                  groupId,
+                },
+              })),
+            }
+          : undefined,
+      },
+    });
+  }
+
+  async remove(id: string) {
+    // Verifica se o usuário existe antes de deletar
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user) {
+      throw new NotFoundException(`Usuário com ID ${id} não encontrado`);
+    }
+
+    return this.prisma.user.delete({
+      where: { id },
     });
   }
 }

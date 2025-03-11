@@ -6,6 +6,8 @@ import {
   Get,
   Param,
   NotFoundException,
+  Delete,
+  Query,
 } from '@nestjs/common';
 import { GroupsService } from './groups.service';
 import { CreateGroupDTO } from './dto/create-group.dto';
@@ -56,5 +58,19 @@ export class GroupsController {
     }
 
     return this.groupsService.update(id, updateGroupDto);
+  }
+
+  @Delete(':id')
+  removeById(@Param('id') id: string) {
+    return this.groupsService.remove(id);
+  }
+
+  // DELETE /groups?id=...
+  @Delete()
+  removeByQuery(@Query('id') id: string) {
+    if (!id) {
+      throw new NotFoundException('O parâmetro "id" é obrigatório na query');
+    }
+    return this.groupsService.remove(id);
   }
 }
