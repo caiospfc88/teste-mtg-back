@@ -10,7 +10,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
   ) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const secret = configService.get<string>('JWT_SECRET')!;
     super({
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
