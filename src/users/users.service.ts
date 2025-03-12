@@ -6,17 +6,21 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDTO } from './dto/create-user.dto';
 import { UpdateUserDTO } from './dto/update-user.dto';
+import * as bcrypt from 'bcryptjs';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  create(createUserDto: CreateUserDTO) {
+  async create(createUserDto: CreateUserDTO) {
+    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+
     return this.prisma.user.create({
       data: {
         name: createUserDto.name,
         email: createUserDto.email,
-        password: createUserDto.password,
+        password: hashedPassword,
         isActive: createUserDto.isActive ?? true,
         groups: createUserDto.groups
           ? {
@@ -63,23 +67,37 @@ export class UsersService {
       throw new NotFoundException(`Usuário com ID ${id} não encontrado`);
     }
 
+    // Se a senha for fornecida, criptografá-la
+    let hashedPassword: string | undefined;
+    if (updateUserDto.password) {
+      hashedPassword = await bcrypt.hash(updateUserDto.password, 10); // Espera a criptografia da senha
+    }
+
     const { groups, ...userData } = updateUserDto;
+
+    // Construindo os dados de atualização
+    const updateData: Prisma.UserUpdateInput = {
+      ...userData, // Dados que não envolvem a senha
+      groups: groups
+        ? {
+            set: groups.map((groupId) => ({
+              userId_groupId: {
+                userId: id,
+                groupId,
+              },
+            })),
+          }
+        : undefined,
+    };
+
+    // Se a senha foi fornecida, adiciona a senha criptografada aos dados de atualização
+    if (hashedPassword) {
+      updateData.password = hashedPassword;
+    }
 
     return this.prisma.user.update({
       where: { id },
-      data: {
-        ...userData,
-        groups: groups
-          ? {
-              set: groups.map((groupId) => ({
-                userId_groupId: {
-                  userId: id,
-                  groupId,
-                },
-              })),
-            }
-          : undefined,
-      },
+      data: updateData,
     });
   }
 
