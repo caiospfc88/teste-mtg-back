@@ -14,7 +14,6 @@ import { PrismaModule } from 'src/prisma/prisma.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         secret: configService.get<string>('JWT_SECRET') || 'fallback-secret',
         signOptions: { expiresIn: '6h' },
       }),
