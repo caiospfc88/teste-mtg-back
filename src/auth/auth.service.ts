@@ -29,9 +29,8 @@ export class AuthService {
       throw new UnauthorizedException('Credenciais inválidas');
     }
 
-    const payload = { id: user.id, email: user.email };
+    const payload = { id: user.id, email: user.email, name: user.name };
     const token = this.generateJwt(payload);
-    console.log('login sucess: ', { ...payload, token });
     return { ...payload, token };
   }
 
