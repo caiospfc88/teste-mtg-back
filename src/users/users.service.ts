@@ -70,14 +70,13 @@ export class UsersService {
     // Se a senha for fornecida, criptografá-la
     let hashedPassword: string | undefined;
     if (updateUserDto.password) {
-      hashedPassword = await bcrypt.hash(updateUserDto.password, 10); // Espera a criptografia da senha
+      hashedPassword = await bcrypt.hash(updateUserDto.password, 10);
     }
 
     const { groups, ...userData } = updateUserDto;
 
-    // Construindo os dados de atualização
     const updateData: Prisma.UserUpdateInput = {
-      ...userData, // Dados que não envolvem a senha
+      ...userData,
       groups: groups
         ? {
             set: groups.map((groupId) => ({
@@ -90,7 +89,6 @@ export class UsersService {
         : undefined,
     };
 
-    // Se a senha foi fornecida, adiciona a senha criptografada aos dados de atualização
     if (hashedPassword) {
       updateData.password = hashedPassword;
     }
@@ -104,7 +102,7 @@ export class UsersService {
   async remove(id: string) {
     const user = await this.prisma.user.findUnique({
       where: { id },
-      include: { ownedGroups: true }, // Busca os grupos que ele possui
+      include: { ownedGroups: true },
     });
 
     if (!user) {
